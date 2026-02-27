@@ -10,7 +10,8 @@ body, html {
   url('https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&q=80&w=2560');
   background-size: cover; background-position: center; background-attachment: fixed;
   color: #fff;
-  overflow: hidden; /* Prevent any global scrolling */
+  overflow: hidden;
+  touch-action: manipulation; /* Prevents double-tap to zoom */
 }
 
 /* --- FIREFLIES --- */
@@ -37,14 +38,14 @@ body, html {
 /* --- APP LAYOUT --- */
 .app-wrapper {
   display: flex; justify-content: center; align-items: center;
-  width: 100vw; height: 100vh; position: relative; z-index: 10;
-  overflow: hidden; /* Strict clipping of everything inside */
+  width: 100vw; height: 100dvh; position: relative; z-index: 10;
+  overflow: hidden;
 }
 
 .main-content {
   width: 100%; max-width: 500px;
   display: flex; flex-direction: column;
-  height: 80vh; padding: 0 20px;
+  height: 85vh; padding: 0 20px;
   position: relative;
 }
 
@@ -72,45 +73,42 @@ body, html {
 }
 .input-container input {
   flex: 1; background: transparent; border: none; padding: 12px;
-  color: white; outline: none; font-size: 0.95rem;
+  color: white; outline: none; font-size: 16px; /* 16px stops iOS zoom */
 }
 .add-btn {
   background: #F8D794; color: #111; border: none;
   padding: 0 25px; border-radius: 8px; cursor: pointer;
   font-weight: 600; font-size: 0.8rem; transition: 0.3s;
 }
-.add-btn:hover { background: #fff; transform: scale(1.05); }
 
-/* --- TASK LIST (Prevents Shine Leaking) --- */
+/* --- TASK LIST (Fixed padding for glow) --- */
 .task-list { 
   flex: 1; 
   overflow-y: auto; 
-  overflow-x: hidden; /* This is the key fix for the sideways scroll */
-  padding: 10px 5px;
+  overflow-x: hidden; 
+  padding: 20px 40px; /* Room for the glow shadow */
+  margin: 0 -20px;    /* Centers the list again */
 }
 .task-list::-webkit-scrollbar { width: 3px; }
 .task-list::-webkit-scrollbar-thumb { background: rgba(248, 215, 148, 0.2); border-radius: 10px; }
 
 .task-card {
   position: relative; width: 100%; padding: 22px 28px;
-  border-radius: 16px; margin-bottom: 18px;
+  border-radius: 16px; margin-bottom: 22px;
   box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-  overflow: hidden; /* Ensures shine stays inside card */
+  overflow: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .task-card.is-done {
   box-shadow: 0 0 25px rgba(248, 215, 148, 0.5), 0 10px 20px rgba(0,0,0,0.4);
-  filter: saturate(1.1);
 }
 
 .shine-effect {
   position: absolute; top: 0; left: -100%;
   width: 50%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transform: skewX(-25deg); 
-  pointer-events: none;
-  z-index: 2;
+  transform: skewX(-25deg); pointer-events: none; z-index: 2;
 }
 
 .task-header {
@@ -130,7 +128,7 @@ body, html {
   opacity: 0.3; cursor: pointer; font-size: 22px; z-index: 10;
 }
 
-/* --- SIDEBAR (Restored Design) --- */
+/* --- SIDEBAR --- */
 .sidebar {
   position: fixed; right: 0; top: 0;
   height: 100%; width: 320px;
@@ -151,13 +149,8 @@ body, html {
   color: #F8D794; border-bottom: 1px solid rgba(248, 215, 148, 0.15);
   padding-bottom: 15px; letter-spacing: 2px;
 }
-
 .cat-list { flex: 1; overflow-y: auto; margin-bottom: 30px; }
-
-.cat-item-row {
-  display: flex; align-items: center; 
-  border-bottom: 1px solid rgba(255,255,255,0.02);
-}
+.cat-item-row { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.02); }
 .cat-item {
   flex: 1; text-align: left; background: none; border: none;
   color: #666; padding: 18px 0; font-family: 'Cinzel', serif;
@@ -173,11 +166,10 @@ body, html {
   transition: 0.3s; padding: 0 10px;
 }
 .cat-item-row:hover .cat-delete-btn { opacity: 0.5; }
-.cat-delete-btn:hover { opacity: 1 !important; transform: scale(1.2); }
 
 .cat-form { display: flex; gap: 8px; margin-top: auto; }
 .cat-form input {
   flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-  padding: 12px; border-radius: 6px; color: #fff; font-size: 0.85rem; outline: none;
+  padding: 12px; border-radius: 6px; color: #fff; font-size: 16px; outline: none;
 }
 .cat-form button { background: #F8D794; border: none; width: 45px; border-radius: 6px; cursor: pointer; font-weight: bold; }

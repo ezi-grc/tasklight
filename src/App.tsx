@@ -14,7 +14,6 @@ import {
 } from "firebase/firestore";
 import "./App.css";
 
-// Preload Sound Effects
 const CLICK_SOUND = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
 const COMPLETE_SOUND = new Audio("https://assets.mixkit.co/active_storage/sfx/2020/2020-preview.mp3");
 CLICK_SOUND.volume = 0.3;
@@ -31,7 +30,6 @@ const COLORS = [
   { hex: "#111A19", text: "#F8D794" }
 ];
 
-// Optimized Fireflies
 const Fireflies = React.memo(() => {
   const fireflyData = useMemo(() => {
     return [...Array(15)].map((_, i) => ({
@@ -59,7 +57,7 @@ function App() {
   const [activeCatId, setActiveCatId] = useState<string>("default");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const activeCategoryName = categories.find(c => c.id === activeCatId)?.name || "Home tab";
+  const activeCategoryName = categories.find(c => c.id === activeCatId)?.name || "...";
 
   const playSound = (type: "click" | "complete" = "click") => {
     const audio = type === "complete" ? COMPLETE_SOUND : CLICK_SOUND;
@@ -78,7 +76,7 @@ function App() {
 
   useEffect(() => {
     if (activeCatId === "default") return;
-    setTasks([]); // Instant clear for category switch
+    setTasks([]); 
     const q = query(tasksCollection, where("categoryId", "==", activeCatId), orderBy("createdAt", "desc"));
     return onSnapshot(q, (snap) => {
       setTasks(snap.docs.map(d => ({ id: d.id, ...d.data() })) as Task[]);
@@ -122,7 +120,6 @@ function App() {
   return (
     <div className="app-wrapper">
       <Fireflies />
-
       <main className="main-content">
         <header className="hero">
           <h1 className="title">Nexus</h1>
@@ -171,7 +168,6 @@ function App() {
                       />
                     )}
                   </AnimatePresence>
-
                   <button className="delete-icon" onClick={(e) => { e.stopPropagation(); playSound(); deleteDoc(doc(db, "tasks", t.id)); }}>×</button>
                   <div className="task-body">
                     {editingId === t.id ? (
@@ -187,11 +183,10 @@ function App() {
                     ) : (
                       <div className="task-header" onClick={() => { playSound(); setEditingId(t.id); }}>{t.text}</div>
                     )}
-                    
                     <div className="task-footer" onClick={() => toggleTask(t.id, t.completed)}>
                       <div className="meta-item">
                         <span className="meta-label">STATUS</span>
-                        <span className="meta-value">{t.completed ? " DONE " : " ACTIVE "}</span>
+                        <span className="meta-value">{t.completed ? "DONE" : "ACTIVE"}</span>
                       </div>
                     </div>
                   </div>
@@ -220,7 +215,7 @@ function App() {
             ))}
           </nav>
           <form className="cat-form" onSubmit={addCategory}>
-            <input value={catInput} onChange={e => setCatInput(e.target.value)} placeholder="Add a new Category" />
+            <input value={catInput} onChange={e => setCatInput(e.target.value)} placeholder="New Link..." />
             <button type="submit">+</button>
           </form>
         </div>

@@ -23,7 +23,7 @@ const TIMER_ALARM = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/
 CLICK_SOUND.volume = 0.3;
 COMPLETE_SOUND.volume = 0.5;
 TIMER_ALARM.volume = 0.6;
-TIMER_ALARM.loop = false; 
+TIMER_ALARM.loop = false;
 
 interface Task { id: string; text: string; completed: boolean; categoryId: string; }
 interface Category { id: string; name: string; }
@@ -62,6 +62,8 @@ function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCatId, setActiveCatId] = useState<string>("general");
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Sidebar State
   const [isCatSidebarOpen, setCatSidebarOpen] = useState(false);
   const [isTimerSidebarOpen, setTimerSidebarOpen] = useState(false);
 
@@ -70,11 +72,16 @@ function App() {
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
   const [timerTime, setTimerTime] = useState(0); 
   const [tSegments, setTSegments] = useState({ h: "00", m: "00", s: "00" });
-  
   const timerRef = useRef<any>(null);
   const alarmIntervalRef = useRef<any>(null);
 
   const activeCategoryName = activeCatId === "general" ? "General Tab" : (categories.find(c => c.id === activeCatId)?.name || "General Tab");
+
+  // UX Logic: Close all sidebars
+  const closeAllSidebars = () => {
+    setCatSidebarOpen(false);
+    setTimerSidebarOpen(false);
+  };
 
   const playSound = (type: "click" | "complete" | "alarm" = "click") => {
     if (type === "click") { CLICK_SOUND.currentTime = 0; CLICK_SOUND.play().catch(() => {}); }
@@ -136,7 +143,6 @@ function App() {
     setTSegments(prev => ({ ...prev, [field]: digits.padStart(2, "0") }));
   };
 
-  // FIXED: Variable name updated to totalSeconds
   const formatCountdown = (totalSeconds: number) => {
     const h = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
     const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
@@ -172,32 +178,17 @@ function App() {
     setActiveCatId(docRef.id);
   };
 
-  // FINAL RE-FIX FOR CATEGORY REMOVAL
   const removeCategory = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevents the sidebar from thinking you clicked the category name
-    
-    if (!id || id === "general") return;
+    e.stopPropagation();
     playSound("click");
-
     try {
-      // 1. Delete associated tasks first
-      const q = query(tasksCollection, where("categoryId", "==", id));
-      const snap = await getDocs(q);
-      const deleteBatch = snap.docs.map(t => deleteDoc(doc(db, "tasks", t.id)));
-      await Promise.all(deleteBatch);
-
-      // 2. Delete the category itself
-      await deleteDoc(doc(db, "categories", id));
-
-      // 3. Reset view if the deleted one was active
-      if (activeCatId === id) {
-        setActiveCatId("general");
-      }
-    } catch (err) {
-      console.error("Delete Error:", err);
-      alert("Firestore error: Ensure your 'Delete' rules are enabled in the Firebase Console.");
-    }
+        const q = query(tasksCollection, where("categoryId", "==", id));
+        const snap = await getDocs(q);
+        const deleteBatch = snap.docs.map(t => deleteDoc(doc(db, "tasks", t.id)));
+        await Promise.all(deleteBatch);
+        await deleteDoc(doc(db, "categories", id));
+        if (activeCatId === id) setActiveCatId("general");
+    } catch (err) { console.error(err); }
   };
 
   const addTask = async (e: React.FormEvent) => {
@@ -209,14 +200,22 @@ function App() {
   };
 
   return (
-    <div className="app-wrapper">
+    <div className="app-wrapper" onClick={closeAllSidebars}>
       <Fireflies />
+      
+      {/* Backdrop for mobile UX */}
+      <AnimatePresence>
+        {(isCatSidebarOpen || isTimerSidebarOpen) && (
+          <motion.div className="sidebar-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+        )}
+      </AnimatePresence>
+
       <main className="main-content">
         <header className="hero">
-          <div className="timer-toggle-btn" onClick={() => { playSound(); setTimerSidebarOpen(!isTimerSidebarOpen); }}>
+          <div className="timer-toggle-btn" onClick={(e) => { e.stopPropagation(); playSound(); setTimerSidebarOpen(!isTimerSidebarOpen); setCatSidebarOpen(false); }}>
             <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
           </div>
-          <div className="cat-toggle-btn" onClick={() => { playSound(); setCatSidebarOpen(!isCatSidebarOpen); }}>
+          <div className="cat-toggle-btn" onClick={(e) => { e.stopPropagation(); playSound(); setCatSidebarOpen(!isCatSidebarOpen); setTimerSidebarOpen(false); }}>
             <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
           </div>
           <h1 className="title">Nexus</h1>
@@ -231,12 +230,12 @@ function App() {
           </AnimatePresence>
         </div>
 
-        <form className="input-container" onSubmit={addTask}>
+        <form className="input-container" onSubmit={addTask} onClick={(e) => e.stopPropagation()}>
           <input value={taskInput} onChange={e => setTaskInput(e.target.value)} placeholder="Channel a task..." />
           <button type="submit" className="add-btn">ADD</button>
         </form>
 
-        <div className="task-list">
+        <div className="task-list" onClick={(e) => e.stopPropagation()}>
           <AnimatePresence mode="popLayout">
             {tasks.map((t, index) => {
               const theme = COLORS[index % COLORS.length];
@@ -259,8 +258,7 @@ function App() {
         </div>
       </main>
 
-      {/* Timer Sidebar */}
-      <aside className={`sidebar sidebar-left ${isTimerSidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar sidebar-left ${isTimerSidebarOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="sidebar-inner">
           <h2 className="sidebar-title">Ritual Timer</h2>
           <div className="timer-ritual-display">
@@ -289,17 +287,16 @@ function App() {
         </div>
       </aside>
 
-      {/* Category Sidebar */}
-      <aside className={`sidebar sidebar-right ${isCatSidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar sidebar-right ${isCatSidebarOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="sidebar-inner">
           <h2 className="sidebar-title">Categories</h2>
           <nav className="cat-list">
             <div className="cat-item-row">
-              <button className={`cat-item ${activeCatId === 'general' ? 'active' : ''}`} onClick={() => { playSound(); setActiveCatId('general'); setCatSidebarOpen(false); }}>General Tab</button>
+              <button className={`cat-item ${activeCatId === 'general' ? 'active' : ''}`} onClick={() => { playSound(); setActiveCatId('general'); closeAllSidebars(); }}>General Tab</button>
             </div>
             {categories.map(cat => (
               <div key={cat.id} className="cat-item-row">
-                <button className={`cat-item ${activeCatId === cat.id ? 'active' : ''}`} onClick={() => { playSound(); setActiveCatId(cat.id); setCatSidebarOpen(false); }}>{cat.name}</button>
+                <button className={`cat-item ${activeCatId === cat.id ? 'active' : ''}`} onClick={() => { playSound(); setActiveCatId(cat.id); closeAllSidebars(); }}>{cat.name}</button>
                 <button className="cat-delete-btn" onClick={(e) => removeCategory(cat.id, e)}>×</button>
               </div>
             ))}

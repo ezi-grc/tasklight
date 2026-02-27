@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
 
-* { box-sizing: border-box; }
+* { 
+  box-sizing: border-box; 
+  -webkit-tap-highlight-color: transparent; 
+}
 
 body, html {
   margin: 0; padding: 0;
@@ -9,9 +12,9 @@ body, html {
   background: linear-gradient(rgba(10, 15, 20, 0.88), rgba(10, 15, 20, 0.96)),
   url('https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&q=80&w=2560');
   background-size: cover; background-position: center; background-attachment: fixed;
-  color: #fff;
-  overflow: hidden;
-  touch-action: manipulation; /* Prevents double-tap to zoom */
+  color: #fff; 
+  overflow: hidden; /* Important for mobile ritual feel */
+  touch-action: manipulation;
 }
 
 /* --- FIREFLIES --- */
@@ -49,6 +52,29 @@ body, html {
   position: relative;
 }
 
+/* Toggles (Upper Corners) */
+.timer-toggle-btn, .cat-toggle-btn {
+  position: absolute;
+  top: 0;
+  width: 45px;
+  height: 45px;
+  background: rgba(248, 215, 148, 0.1);
+  border: 1px solid rgba(248, 215, 148, 0.4);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 100; transition: 0.3s;
+  backdrop-filter: blur(10px);
+}
+.timer-toggle-btn { left: 20px; }
+.cat-toggle-btn { right: 20px; }
+
+.timer-toggle-btn:hover, .cat-toggle-btn:hover { 
+  background: rgba(248, 215, 148, 0.2); 
+  border-color: #F8D794; 
+}
+.timer-toggle-btn svg, .cat-toggle-btn svg { width: 22px; height: 22px; fill: #F8D794; }
+
+/* Typography */
 .hero { text-align: center; margin-bottom: 10px; }
 .title {
   font-family: 'Cinzel', serif; font-size: 3rem;
@@ -66,6 +92,7 @@ body, html {
   text-transform: uppercase; color: #F8D794; opacity: 0.8; font-weight: 500;
 }
 
+/* Inputs */
 .input-container {
   display: flex; background: rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
@@ -73,7 +100,7 @@ body, html {
 }
 .input-container input {
   flex: 1; background: transparent; border: none; padding: 12px;
-  color: white; outline: none; font-size: 16px; /* 16px stops iOS zoom */
+  color: white; outline: none; font-size: 16px; /* Prevents mobile zoom */
 }
 .add-btn {
   background: #F8D794; color: #111; border: none;
@@ -81,13 +108,13 @@ body, html {
   font-weight: 600; font-size: 0.8rem; transition: 0.3s;
 }
 
-/* --- TASK LIST (Fixed padding for glow) --- */
+/* --- TASK CARDS & GLOW --- */
 .task-list { 
   flex: 1; 
   overflow-y: auto; 
   overflow-x: hidden; 
-  padding: 20px 40px; /* Room for the glow shadow */
-  margin: 0 -20px;    /* Centers the list again */
+  padding: 20px 40px; /* Vital: prevents glow from being cut off */
+  margin: 0 -20px;
 }
 .task-list::-webkit-scrollbar { width: 3px; }
 .task-list::-webkit-scrollbar-thumb { background: rgba(248, 215, 148, 0.2); border-radius: 10px; }
@@ -99,9 +126,9 @@ body, html {
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .task-card.is-done {
   box-shadow: 0 0 25px rgba(248, 215, 148, 0.5), 0 10px 20px rgba(0,0,0,0.4);
+  filter: saturate(1.1);
 }
 
 .shine-effect {
@@ -128,44 +155,66 @@ body, html {
   opacity: 0.3; cursor: pointer; font-size: 22px; z-index: 10;
 }
 
-/* --- SIDEBAR --- */
-.sidebar {
-  position: fixed; right: 0; top: 0;
-  height: 100%; width: 320px;
-  background: rgba(8, 12, 15, 0.98);
-  border-left: 1px solid rgba(248, 215, 148, 0.1);
-  backdrop-filter: blur(40px); transform: translateX(295px);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1000;
+/* --- SIDEBARS --- */
+.sidebar { 
+  position: fixed; top: 0; height: 100%; width: 320px; 
+  background: rgba(8, 12, 15, 0.98); backdrop-filter: blur(40px); 
+  z-index: 1000; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
 }
-.sidebar:hover { transform: translateX(0); }
-.sidebar-trigger {
-  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 25px; display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #F8D794; cursor: pointer; opacity: 0.6;
-}
+.sidebar-left { left: 0; border-right: 1px solid rgba(248, 215, 148, 0.1); transform: translateX(-100%); }
+.sidebar-right { right: 0; border-left: 1px solid rgba(248, 215, 148, 0.1); transform: translateX(100%); }
+.sidebar.open { transform: translateX(0); }
 .sidebar-inner { padding: 50px 35px; display: flex; flex-direction: column; height: 100%; }
-.sidebar-title {
-  font-family: 'Cinzel', serif; font-size: 1.3rem; margin-bottom: 40px;
-  color: #F8D794; border-bottom: 1px solid rgba(248, 215, 148, 0.15);
-  padding-bottom: 15px; letter-spacing: 2px;
+.sidebar-title { font-family: 'Cinzel', serif; font-size: 1.3rem; margin-bottom: 40px; color: #F8D794; border-bottom: 1px solid rgba(248, 215, 148, 0.15); padding-bottom: 15px; letter-spacing: 2px; }
+
+/* --- TIMER Ritual Display --- */
+.timer-ritual-display {
+  display: flex; align-items: center; justify-content: center;
+  font-family: monospace; font-size: 3.2rem;
+  color: #F8D794; margin: 40px 0; letter-spacing: 2px;
 }
+.timer-ritual-display input {
+  background: transparent; border: none; color: #F8D794;
+  width: 75px; font-family: inherit; font-size: inherit;
+  text-align: center; outline: none; cursor: pointer;
+}
+.timer-ritual-display span { opacity: 0.4; margin-bottom: 5px; }
+.timer-ritual-display .timer-readonly { pointer-events: none; text-align: center; }
+
+.timer-controls { display: flex; flex-direction: column; gap: 15px; justify-content: center; }
+.timer-btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
+.timer-btn.start { background: #F8D794; color: #111; box-shadow: 0 10px 20px rgba(248, 215, 148, 0.2); }
+.timer-btn.reset { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); }
+.timer-btn.alarm-stop { background: #fff; color: #000; animation: alarm-pulse 1s infinite alternate; }
+@keyframes alarm-pulse { from { box-shadow: 0 0 10px #fff; transform: scale(1); } to { box-shadow: 0 0 30px #F8D794; transform: scale(1.02); } }
+
+/* --- CATEGORY LIST (Delete fix included) --- */
 .cat-list { flex: 1; overflow-y: auto; margin-bottom: 30px; }
-.cat-item-row { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.02); }
+.cat-item-row { 
+  display: flex; align-items: center; 
+  border-bottom: 1px solid rgba(255,255,255,0.02); 
+  width: 100%;
+  position: relative;
+}
 .cat-item {
   flex: 1; text-align: left; background: none; border: none;
   color: #666; padding: 18px 0; font-family: 'Cinzel', serif;
   font-size: 0.9rem; cursor: pointer; transition: 0.3s;
-  text-transform: uppercase; letter-spacing: 1px;
+  text-transform: uppercase; letter-spacing: 1.5px;
 }
 .cat-item:hover { color: #fff; padding-left: 10px; }
 .cat-item.active { color: #F8D794; font-weight: 700; border-left: 3px solid #F8D794; padding-left: 15px; }
 
+/* The Category Delete Button Fix */
 .cat-delete-btn {
   background: none; border: none; color: #ff5c5c;
-  font-size: 1.1rem; cursor: pointer; opacity: 0; 
-  transition: 0.3s; padding: 0 10px;
+  font-size: 1.3rem; cursor: pointer; 
+  opacity: 0.4; /* Always slightly visible for mobile UX */
+  padding: 15px 20px; transition: 0.2s;
+  z-index: 10;
+  pointer-events: auto; /* Ensures it is clickable */
 }
-.cat-item-row:hover .cat-delete-btn { opacity: 0.5; }
+.cat-delete-btn:hover { opacity: 1 !important; transform: scale(1.3); }
 
 .cat-form { display: flex; gap: 8px; margin-top: auto; }
 .cat-form input {
